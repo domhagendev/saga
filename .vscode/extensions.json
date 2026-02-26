@@ -1,0 +1,14 @@
+{
+  "recommendations": [
+    "Vue.volar",
+    "bradlc.vscode-tailwindcss",
+    "ms-azuretools.vscode-azurefunctions",
+    "ms-azuretools.vscode-bicep",
+    "lokalise.i18n-ally",
+    "esbenp.prettier-vscode",
+    "dbaeumer.vscode-eslint",
+    "ms-azuretools.vscode-azurestaticwebapps",
+    "github.copilot",
+    "github.copilot-chat"
+  ]
+}

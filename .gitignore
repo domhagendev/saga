@@ -1,0 +1,43 @@
+# Dependencies
+node_modules/
+.pnpm-store/
+
+# Build output
+dist/
+*.js.map
+
+# Environment & Secrets
+.env.local
+.env.*.local
+local.settings.json
+
+# Azure Functions
+bin/
+obj/
+
+# IDE
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Deploy artifacts (generated at deploy time)
+.npmrc
+
+# Vite
+*.local
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+*.log
+npm-debug.log*
+pnpm-debug.log*
+
+# Coverage
+coverage/

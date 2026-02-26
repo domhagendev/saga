@@ -1,0 +1,92 @@
+{
+  "common": {
+    "login": "Log in",
+    "logout": "Log out",
+    "register": "Register",
+    "loading": "Loading...",
+    "back": "Back",
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create"
+  },
+  "nav": {
+    "workspace": "Workspace",
+    "about": "About",
+    "contact": "Contact",
+    "merch": "Merch"
+  },
+  "views": {
+    "main": {
+      "title": "SAGA"
+    },
+    "workspace": {
+      "title": "Workspace"
+    },
+    "about": {
+      "title": "About"
+    },
+    "contact": {
+      "title": "Contact"
+    },
+    "merch": {
+      "title": "Merch"
+    }
+  },
+  "auth": {
+    "loginRequired": "Please log in to continue",
+    "loginButton": "Log in",
+    "registerButton": "Register",
+    "logoutButton": "Log out",
+    "profile": "Profile"
+  },
+  "story": {
+    "newBook": "New Book",
+    "characters": "Characters",
+    "locations": "Locations",
+    "rules": "World Rules",
+    "pages": "Pages",
+    "generate": "Generate",
+    "summary": "Summary"
+  },
+  "workspace": {
+    "welcome": "Welcome to your workspace",
+    "selectOrCreate": "Create a new book to get started",
+    "atlas": "Atlas",
+    "mood": "Mood",
+    "beatPrompt": "What happens next?",
+    "beatPlaceholder": "Describe the next beat... Use # to mention characters or locations",
+    "targetMood": "Target mood",
+    "moodPlaceholder": "e.g. Tense, Hopeful, Dark",
+    "generating": "Generating...",
+    "beatHint": "Press Ctrl+Enter to generate. Type # to mention characters or locations.",
+    "untitledPage": "Untitled page",
+    "noPages": "No pages yet. Use the prompt below to generate your first page.",
+    "rollingSummary": "Rolling Summary",
+    "noSummary": "No summary generated yet. It will appear after the first few pages.",
+    "addCharacter": "Add Character",
+    "characterName": "Name",
+    "characterNamePlaceholder": "Character name",
+    "characterDescPlaceholder": "Physical appearance, backstory, role in the story...",
+    "description": "Description",
+    "traits": "Traits",
+    "traitsPlaceholder": "e.g. Brave, Cunning, Loyal",
+    "motivation": "Motivation",
+    "motivationPlaceholder": "What drives this character?",
+    "toggleActive": "Toggle active in AI context",
+    "noCharacters": "No characters yet. Add one to include them in the AI's context.",
+    "addLocation": "Add Location",
+    "locationName": "Name",
+    "locationNamePlaceholder": "Location name",
+    "locationDescPlaceholder": "What does this place look like? Key features...",
+    "atmosphere": "Atmosphere",
+    "atmospherePlaceholder": "The mood and feel of this place...",
+    "noLocations": "No locations yet. Add places for your story.",
+    "addRule": "Add Rule",
+    "ruleTitle": "Title",
+    "ruleTitlePlaceholder": "Rule name",
+    "ruleDescPlaceholder": "How does this rule affect the world?",
+    "noRules": "No world rules yet. Define the laws of your world."
+  }
+}

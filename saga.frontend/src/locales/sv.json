@@ -1,0 +1,92 @@
+{
+  "common": {
+    "login": "Logga in",
+    "logout": "Logga ut",
+    "register": "Registrera",
+    "loading": "Laddar...",
+    "back": "Tillbaka",
+    "save": "Spara",
+    "cancel": "Avbryt",
+    "delete": "Radera",
+    "edit": "Redigera",
+    "create": "Skapa"
+  },
+  "nav": {
+    "workspace": "Verkstad",
+    "about": "Om oss",
+    "contact": "Kontakt",
+    "merch": "Merch"
+  },
+  "views": {
+    "main": {
+      "title": "SAGA"
+    },
+    "workspace": {
+      "title": "Verkstad"
+    },
+    "about": {
+      "title": "Om oss"
+    },
+    "contact": {
+      "title": "Kontakt"
+    },
+    "merch": {
+      "title": "Merch"
+    }
+  },
+  "auth": {
+    "loginRequired": "Logga in för att fortsätta",
+    "loginButton": "Logga in",
+    "registerButton": "Registrera",
+    "logoutButton": "Logga ut",
+    "profile": "Profil"
+  },
+  "story": {
+    "newBook": "Ny bok",
+    "characters": "Karaktärer",
+    "locations": "Platser",
+    "rules": "Världsregler",
+    "pages": "Sidor",
+    "generate": "Generera",
+    "summary": "Sammanfattning"
+  },
+  "workspace": {
+    "welcome": "Välkommen till din verkstad",
+    "selectOrCreate": "Skapa en ny bok för att komma igång",
+    "atlas": "Atlas",
+    "mood": "Stämning",
+    "beatPrompt": "Vad händer härnäst?",
+    "beatPlaceholder": "Beskriv nästa händelse... Använd # för att nämna karaktärer eller platser",
+    "targetMood": "Målstämning",
+    "moodPlaceholder": "t.ex. Spänd, Hoppfull, Mörk",
+    "generating": "Genererar...",
+    "beatHint": "Tryck Ctrl+Enter för att generera. Skriv # för att nämna karaktärer eller platser.",
+    "untitledPage": "Namnlös sida",
+    "noPages": "Inga sidor ännu. Använd prompten nedan för att generera din första sida.",
+    "rollingSummary": "Löpande sammanfattning",
+    "noSummary": "Ingen sammanfattning genererad ännu. Den visas efter de första sidorna.",
+    "addCharacter": "Lägg till karaktär",
+    "characterName": "Namn",
+    "characterNamePlaceholder": "Karaktärens namn",
+    "characterDescPlaceholder": "Utseende, bakgrund, roll i berättelsen...",
+    "description": "Beskrivning",
+    "traits": "Egenskaper",
+    "traitsPlaceholder": "t.ex. Modig, Listig, Lojal",
+    "motivation": "Motivation",
+    "motivationPlaceholder": "Vad driver den här karaktären?",
+    "toggleActive": "Växla aktiv i AI-kontext",
+    "noCharacters": "Inga karaktärer ännu. Lägg till en för att inkludera dem i AI:ns kontext.",
+    "addLocation": "Lägg till plats",
+    "locationName": "Namn",
+    "locationNamePlaceholder": "Platsens namn",
+    "locationDescPlaceholder": "Hur ser platsen ut? Viktiga detaljer...",
+    "atmosphere": "Atmosfär",
+    "atmospherePlaceholder": "Stämningen och känslan på platsen...",
+    "noLocations": "Inga platser ännu. Lägg till platser för din berättelse.",
+    "addRule": "Lägg till regel",
+    "ruleTitle": "Titel",
+    "ruleTitlePlaceholder": "Regelns namn",
+    "ruleDescPlaceholder": "Hur påverkar den här regeln världen?",
+    "noRules": "Inga världsregler ännu. Definiera lagarna i din värld."
+  }
+}

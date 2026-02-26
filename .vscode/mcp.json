@@ -1,0 +1,41 @@
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "azure-subscription-id",
+      "description": "Azure Subscription ID"
+    },
+    {
+      "type": "promptString",
+      "id": "github-token",
+      "description": "GitHub Personal Access Token"
+    }
+  ],
+  "servers": {
+    "azureDeveloperCli": {
+      "type": "stdio",
+      "command": "azd",
+      "args": ["tools", "mcp"],
+      "env": {
+        "AZURE_SUBSCRIPTION_ID": "${input:azure-subscription-id}"
+      }
+    },
+    "github": {
+      "type": "stdio",
+      "command": "npx",
+      "args": ["-y", "@modelcontextprotocol/server-github"],
+      "env": {
+        "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github-token}"
+      }
+    },
+    "filesystem": {
+      "type": "stdio",
+      "command": "npx",
+      "args": [
+        "-y",
+        "@modelcontextprotocol/server-filesystem",
+        "${workspaceFolder}"
+      ]
+    },
+  }
+}
