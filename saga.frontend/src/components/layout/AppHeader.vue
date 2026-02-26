@@ -11,7 +11,7 @@ const isMainPage = computed(() => route.path === '/')
 </script>
 
 <template>
-  <header class="fixed inset-x-0 top-0 z-50 flex items-center justify-between px-4 py-3">
+  <header class="fixed inset-x-0 top-0 z-50 flex items-center justify-between border-b border-border bg-background/95 px-4 py-3 backdrop-blur-sm supports-[backdrop-filter]:bg-background/60">
     <!-- Back button (hidden on main page) -->
     <button
       v-if="!isMainPage"

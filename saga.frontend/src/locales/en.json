@@ -19,6 +19,7 @@
   },
   "views": {
     "main": {
+      "companyName": "LILLEMOR.IO",
       "title": "SAGA"
     },
     "workspace": {

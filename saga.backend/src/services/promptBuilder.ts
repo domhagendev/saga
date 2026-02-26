@@ -37,7 +37,7 @@ export function buildPagePrompt(ctx: PromptContext): AssembledPrompt {
   const systemParts: string[] = [
     `You are a creative fiction writer. Write in the style of a ${ctx.globalGenre} story with a ${ctx.globalMood} mood.`,
     `Continue the story naturally, maintaining character voices and plot consistency.`,
-    `Write approximately 500-800 words for the next page.`,
+    `IMPORTANT: Each page must be at most 800 characters including spaces. Do NOT exceed this limit. Write concise, impactful prose that fits within 800 characters.`,
   ]
 
   if (ctx.worldRules.length > 0) {

@@ -26,7 +26,14 @@ async function request<T>(
   })
 
   if (!response.ok) {
-    throw new Error(`Saga API error: ${response.status} ${response.statusText}`)
+    let detail = response.statusText
+    try {
+      const body = await response.json() as { error?: string }
+      if (body.error) detail = body.error
+    } catch {
+      // response body wasn't JSON
+    }
+    throw new Error(`Saga API error: ${response.status} ${detail}`)
   }
 
   return response.json() as Promise<T>

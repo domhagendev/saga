@@ -1,48 +1,53 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { RouterLink } from 'vue-router'
+import { useRouter } from 'vue-router'
+import { useAuthStore } from '@/stores/auth'
+import { useWorkspaceLoaderStore } from '@/stores/workspaceLoader'
+import { Button } from '@/components/ui/button'
 
 const { t } = useI18n()
+const router = useRouter()
+const authStore = useAuthStore()
+const loaderStore = useWorkspaceLoaderStore()
+
+async function handleWorkspaceClick(): Promise<void> {
+  if (loaderStore.isLoading) return
+
+  if (authStore.isAuthenticated) {
+    await loaderStore.loadAndNavigate(router)
+  } else {
+    await authStore.login()
+  }
+}
 </script>
 
 <template>
   <main class="flex min-h-screen flex-col items-center justify-center px-4">
-    <div class="flex flex-col items-center gap-8">
-      <!-- Logo -->
-      <img
-        src="@/assets/logo_one_reading.png"
-        alt="Saga"
-        class="h-48 w-auto"
-      />
+    <!-- Background image — hidden on mobile, covers full screen on md+ -->
+    <img
+      src="@/assets/bg_main.png"
+      alt=""
+      aria-hidden="true"
+      class="pointer-events-none fixed inset-0 hidden h-full w-full object-fill md:block"
+    />
+
+    <div class="relative z-10 flex flex-col items-center gap-8">
 
       <!-- Title -->
-      <h1 class="text-4xl font-light tracking-[0.5em] text-foreground">
+      <h1 class="text-5xl font-light pl-[0.5em] tracking-[0.5em] text-foreground text-gray-500">
         {{ t('views.main.title') }}
       </h1>
 
       <!-- Navigation -->
-      <nav class="flex items-center gap-6 text-sm text-muted-foreground">
-        <RouterLink
-          to="/workspace"
-          class="transition-colors hover:text-foreground"
+      <nav class="flex items-center gap-6 text-m text-muted-foreground">
+        <Button
+          variant="outline"
+          :disabled="loaderStore.isLoading"
+          class="border-cyan-400 bg-cyan-400 px-12 text-lg text-white hover:border-cyan-200 hover:bg-cyan-200 hover:text-white"
+          @click="handleWorkspaceClick"
         >
           {{ t('nav.workspace') }}
-        </RouterLink>
-        <span class="text-border">·</span>
-        <RouterLink to="/about" class="transition-colors hover:text-foreground">
-          {{ t('nav.about') }}
-        </RouterLink>
-        <span class="text-border">·</span>
-        <RouterLink
-          to="/contact"
-          class="transition-colors hover:text-foreground"
-        >
-          {{ t('nav.contact') }}
-        </RouterLink>
-        <span class="text-border">·</span>
-        <RouterLink to="/merch" class="transition-colors hover:text-foreground">
-          {{ t('nav.merch') }}
-        </RouterLink>
+        </Button>
       </nav>
     </div>
   </main>

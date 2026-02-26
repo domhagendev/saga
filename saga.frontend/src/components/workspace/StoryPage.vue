@@ -2,6 +2,11 @@
 import { useI18n } from 'vue-i18n'
 import { ref, computed, watch } from 'vue'
 import type { StoryPage } from '@/stores/book'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { Button } from '@/components/ui/button'
+import { Textarea } from '@/components/ui/textarea'
+import { Badge } from '@/components/ui/badge'
+import { Separator } from '@/components/ui/separator'
 
 const props = defineProps<{
   page: StoryPage
@@ -44,67 +49,60 @@ watch(
 </script>
 
 <template>
-  <article class="rounded-lg border border-border bg-card p-6">
-    <!-- Page header -->
-    <div class="mb-4 flex items-center justify-between">
+  <Card>
+    <CardHeader class="flex-row items-center justify-between space-y-0 pb-3">
       <div class="flex items-center gap-3">
         <span
           class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-sm font-medium text-primary-foreground"
         >
           {{ page.pageNr }}
         </span>
-        <div>
-          <span class="text-xs text-muted-foreground">
-            {{ t('workspace.mood') }}: {{ page.targetMood }}
-          </span>
-        </div>
+        <Badge v-if="page.targetMood" variant="secondary">
+          {{ page.targetMood }}
+        </Badge>
       </div>
-      <button
-        v-if="!isEditing"
-        class="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        @click="startEditing"
-      >
-        {{ t('common.edit') }}
-      </button>
+      <div v-if="!isEditing">
+        <Button variant="ghost" size="sm" @click="startEditing">
+          {{ t('common.edit') }}
+        </Button>
+      </div>
       <div v-else class="flex gap-2">
-        <button
-          class="rounded-md bg-primary px-3 py-1.5 text-sm text-primary-foreground transition-colors hover:bg-primary/90"
-          @click="saveEdit"
-        >
+        <Button size="sm" @click="saveEdit">
           {{ t('common.save') }}
-        </button>
-        <button
-          class="rounded-md px-3 py-1.5 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-          @click="cancelEdit"
-        >
+        </Button>
+        <Button variant="ghost" size="sm" @click="cancelEdit">
           {{ t('common.cancel') }}
-        </button>
+        </Button>
       </div>
-    </div>
+    </CardHeader>
 
-    <!-- User note -->
-    <div
-      v-if="page.userNote"
-      class="mb-4 rounded-md bg-muted px-3 py-2 text-xs italic text-muted-foreground"
-    >
-      {{ page.userNote }}
-    </div>
+    <Separator />
 
-    <!-- Page content - reading mode -->
-    <div v-if="!isEditing" class="prose max-w-none prose-stone">
-      <p
-        v-for="(paragraph, idx) in paragraphs"
-        :key="idx"
-        class="mb-3 text-[15px] leading-relaxed text-foreground last:mb-0"
-        v-html="paragraph.replace(/\*(.*?)\*/g, '<em>$1</em>')"
+    <CardContent class="pt-4">
+      <!-- User note -->
+      <div
+        v-if="page.userNote"
+        class="mb-4 rounded-md bg-muted px-3 py-2 text-xs italic text-muted-foreground"
+      >
+        {{ page.userNote }}
+      </div>
+
+      <!-- Page content - reading mode -->
+      <div v-if="!isEditing" class="prose max-w-none prose-stone">
+        <p
+          v-for="(paragraph, idx) in paragraphs"
+          :key="idx"
+          class="mb-3 text-[15px] leading-relaxed text-foreground last:mb-0"
+          v-html="paragraph.replace(/\*(.*?)\*/g, '<em>$1</em>')"
+        />
+      </div>
+
+      <!-- Page content - editing mode -->
+      <Textarea
+        v-else
+        v-model="editContent"
+        class="min-h-[400px] resize-y text-[15px] leading-relaxed"
       />
-    </div>
-
-    <!-- Page content - editing mode -->
-    <textarea
-      v-else
-      v-model="editContent"
-      class="min-h-[400px] w-full resize-y rounded-md border border-input bg-background p-4 text-[15px] leading-relaxed text-foreground focus:border-ring focus:outline-none"
-    />
-  </article>
+    </CardContent>
+  </Card>
 </template>

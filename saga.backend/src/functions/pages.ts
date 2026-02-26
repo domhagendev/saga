@@ -97,21 +97,53 @@ async function generatePage(
     existingPages.sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
     const lastTwoPages = existingPages.slice(-2)
 
-    // Extract hashtag mentions
+    // Extract hashtag mentions from user text
     const hashtags = extractHashtags(body.userNote)
 
-    // Filter mentioned entities
+    // Collect mentioned entity names from both hashtags and frontend-provided IDs
     const mentionedNames: string[] = []
+    const seenNames = new Set<string>()
+
+    // 1. Match hashtag text to entity names
     for (const tag of hashtags) {
       const matchedChar = characters.find(
         (c) => c.name.toLowerCase() === tag.toLowerCase()
       )
-      if (matchedChar) mentionedNames.push(matchedChar.name)
+      if (matchedChar && !seenNames.has(matchedChar.name)) {
+        mentionedNames.push(matchedChar.name)
+        seenNames.add(matchedChar.name)
+      }
 
       const matchedLoc = locations.find(
         (l) => l.name.replace(/\s/g, '').toLowerCase() === tag.toLowerCase()
       )
-      if (matchedLoc) mentionedNames.push(matchedLoc.name)
+      if (matchedLoc && !seenNames.has(matchedLoc.name)) {
+        mentionedNames.push(matchedLoc.name)
+        seenNames.add(matchedLoc.name)
+      }
+    }
+
+    // 2. Resolve frontend-provided entity IDs to names
+    if (body.mentionedEntities && body.mentionedEntities.length > 0) {
+      for (const entityId of body.mentionedEntities) {
+        const charMatch = characters.find((c) => {
+          const parts = c.rowKey.split('_')
+          return parts[parts.length - 1] === entityId
+        })
+        if (charMatch && !seenNames.has(charMatch.name)) {
+          mentionedNames.push(charMatch.name)
+          seenNames.add(charMatch.name)
+        }
+
+        const locMatch = locations.find((l) => {
+          const parts = l.rowKey.split('_')
+          return parts[parts.length - 1] === entityId
+        })
+        if (locMatch && !seenNames.has(locMatch.name)) {
+          mentionedNames.push(locMatch.name)
+          seenNames.add(locMatch.name)
+        }
+      }
     }
 
     // Build prompt
@@ -160,8 +192,15 @@ async function generatePage(
       status: 201,
       jsonBody: toResponse(pageEntity, bookId),
     }
-  } catch (error) {
+  } catch (error: unknown) {
     context.error('Failed to generate page:', error)
+
+    // Surface Gemini quota/rate-limit errors to the client
+    const errMsg = error instanceof Error ? error.message : String(error)
+    if (errMsg.includes('429') || errMsg.includes('quota')) {
+      return { status: 429, jsonBody: { error: 'AI quota exceeded. Please try again later.' } }
+    }
+
     return { status: 500, jsonBody: { error: 'Internal server error' } }
   }
 }

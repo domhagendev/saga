@@ -2,23 +2,19 @@
   "inputs": [
     {
       "type": "promptString",
-      "id": "azure-subscription-id",
-      "description": "Azure Subscription ID"
+      "id": "github-token",
+      "description": "GitHub Personal Access Token"
     },
     {
       "type": "promptString",
-      "id": "github-token",
-      "description": "GitHub Personal Access Token"
+      "id": "smithery-api-key",
+      "description": "Smithery API key for shadcn-vue MCP (get it from https://smithery.ai/server/@HelloGGX/shadcn-vue-mcp)"
     }
   ],
   "servers": {
-    "azureDeveloperCli": {
-      "type": "stdio",
-      "command": "azd",
-      "args": ["tools", "mcp"],
-      "env": {
-        "AZURE_SUBSCRIPTION_ID": "${input:azure-subscription-id}"
-      }
+    "shadcn-vue-mcp": {
+      "type": "http",
+      "url": "https://server.smithery.ai/@HelloGGX/shadcn-vue-mcp/mcp?api_key=${input:smithery-api-key}"
     },
     "github": {
       "type": "stdio",
@@ -36,6 +32,6 @@
         "@modelcontextprotocol/server-filesystem",
         "${workspaceFolder}"
       ]
-    },
+    }
   }
 }

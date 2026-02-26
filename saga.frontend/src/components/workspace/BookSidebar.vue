@@ -1,8 +1,13 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
+import { ref, watch } from 'vue'
 import type { Book, StoryPage } from '@/stores/book'
+import { Button } from '@/components/ui/button'
+import { Card, CardContent, CardHeader } from '@/components/ui/card'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { Separator } from '@/components/ui/separator'
 
-defineProps<{
+const props = defineProps<{
   book: Book
   pages: StoryPage[]
   currentPageNr: number
@@ -11,68 +16,103 @@ defineProps<{
 const emit = defineEmits<{
   selectPage: [pageNr: number]
   newBook: []
+  updateTitle: [title: string]
 }>()
 
 const { t } = useI18n()
+
+const isEditingTitle = ref(false)
+const editTitle = ref(props.book.title)
+
+watch(() => props.book.title, (val) => {
+  editTitle.value = val
+})
+
+function startEditing(): void {
+  editTitle.value = props.book.title
+  isEditingTitle.value = true
+}
+
+function saveTitle(): void {
+  isEditingTitle.value = false
+  const trimmed = editTitle.value.trim()
+  if (trimmed && trimmed !== props.book.title) {
+    emit('updateTitle', trimmed)
+  }
+}
+
+function cancelEditing(): void {
+  isEditingTitle.value = false
+  editTitle.value = props.book.title
+}
 </script>
 
 <template>
-  <aside class="flex h-full flex-col rounded-lg border border-border bg-card">
+  <aside class="flex h-full flex-col">
     <!-- Book info -->
-    <div class="border-b border-border p-4">
-      <h2 class="text-base font-semibold text-foreground">{{ book.title }}</h2>
-      <div class="mt-1 flex gap-2">
-        <span class="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
-          {{ book.globalGenre }}
-        </span>
-        <span class="rounded-full bg-secondary px-2 py-0.5 text-xs text-secondary-foreground">
-          {{ book.globalMood }}
-        </span>
-      </div>
+    <div class="p-4">
+      <input
+        v-if="isEditingTitle"
+        v-model="editTitle"
+        class="w-full border-b border-border bg-transparent text-base font-semibold text-foreground outline-none focus:border-primary"
+        @blur="saveTitle"
+        @keydown.enter="saveTitle"
+        @keydown.escape="cancelEditing"
+        @vue:mounted="({ el }: { el: HTMLInputElement }) => el.focus()"
+      />
+      <h2
+        v-else
+        class="cursor-pointer text-base font-semibold text-foreground hover:text-muted-foreground"
+        @click="startEditing"
+      >
+        {{ book.title }}
+      </h2>
     </div>
+
+    <Separator />
 
     <!-- Page list -->
-    <div class="flex-1 overflow-y-auto p-2">
-      <h3 class="mb-2 px-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
-        {{ t('story.pages') }}
-      </h3>
-      <nav class="space-y-1">
-        <button
-          v-for="page in pages"
-          :key="page.pageNr"
-          class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-left text-sm transition-colors"
-          :class="
-            page.pageNr === currentPageNr
-              ? 'bg-accent text-accent-foreground font-medium'
-              : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
-          "
-          @click="emit('selectPage', page.pageNr)"
-        >
-          <span
-            class="flex h-5 w-5 items-center justify-center rounded text-xs"
+    <ScrollArea class="flex-1">
+      <div class="p-2">
+        <h3 class="mb-2 px-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+          {{ t('story.pages') }}
+        </h3>
+        <nav class="space-y-0.5">
+          <button
+            v-for="page in pages"
+            :key="page.pageNr"
+            class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors"
             :class="
               page.pageNr === currentPageNr
-                ? 'bg-primary text-primary-foreground'
-                : 'bg-muted text-muted-foreground'
+                ? 'bg-accent text-accent-foreground font-medium'
+                : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
             "
+            @click="emit('selectPage', page.pageNr)"
           >
-            {{ page.pageNr }}
-          </span>
-          <span class="truncate">
-            {{ page.userNote || t('workspace.untitledPage') }}
-          </span>
-        </button>
-      </nav>
-    </div>
+            <span
+              class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-xs font-medium"
+              :class="
+                page.pageNr === currentPageNr
+                  ? 'bg-primary text-primary-foreground'
+                  : 'bg-muted text-muted-foreground'
+              "
+            >
+              {{ page.pageNr }}
+            </span>
+            <span class="truncate">
+              {{ page.userNote || t('workspace.untitledPage') }}
+            </span>
+          </button>
+        </nav>
+      </div>
+    </ScrollArea>
 
     <!-- Bottom actions -->
-    <div class="border-t border-border p-3">
-      <button
-        class="w-full rounded-md border border-border px-3 py-2 text-sm text-muted-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
-        @click="emit('newBook')"
-      >
+    <Separator />
+    <div class="p-3">
+      <Button variant="outline" class="w-full" @click="emit('newBook')">
         {{ t('story.newBook') }}
-      </button>
+      </Button>
     </div>
   </aside>
 </template>

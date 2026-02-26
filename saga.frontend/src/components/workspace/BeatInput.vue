@@ -2,6 +2,9 @@
 import { useI18n } from 'vue-i18n'
 import { ref, computed } from 'vue'
 import type { Character, Location } from '@/stores/book'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import { Badge } from '@/components/ui/badge'
 
 const props = defineProps<{
   characters: Character[]
@@ -92,7 +95,7 @@ function handleKeydown(event: KeyboardEvent): void {
 </script>
 
 <template>
-  <div class="rounded-lg border border-border bg-card p-4">
+  <div>
     <label class="mb-2 block text-sm font-medium text-foreground">
       {{ t('workspace.beatPrompt') }}
     </label>
@@ -104,7 +107,7 @@ function handleKeydown(event: KeyboardEvent): void {
         :placeholder="t('workspace.beatPlaceholder')"
         :disabled="isGenerating"
         rows="3"
-        class="w-full resize-none rounded-md border border-input bg-background p-3 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
+        class="flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
         @input="handleInput"
         @keydown="handleKeydown"
       />
@@ -112,24 +115,20 @@ function handleKeydown(event: KeyboardEvent): void {
       <!-- Mention dropdown -->
       <div
         v-if="showMentions && mentionables.length > 0"
-        class="absolute bottom-full left-0 z-10 mb-1 max-h-48 w-64 overflow-y-auto rounded-md border border-border bg-popover shadow-lg"
+        class="absolute bottom-full left-0 z-10 mb-1 max-h-48 w-64 overflow-y-auto rounded-md border border-border bg-popover p-1 shadow-md"
       >
         <button
           v-for="item in mentionables"
           :key="item.id"
-          class="flex w-full items-center gap-2 px-3 py-2 text-left text-sm text-popover-foreground transition-colors hover:bg-accent"
+          class="flex w-full items-center gap-2 rounded-sm px-2 py-1.5 text-left text-sm text-popover-foreground transition-colors hover:bg-accent hover:text-accent-foreground"
           @click="insertMention(item)"
         >
-          <span
-            class="flex h-5 w-5 items-center justify-center rounded-full text-xs"
-            :class="
-              item.type === 'character'
-                ? 'bg-blue-100 text-blue-700'
-                : 'bg-green-100 text-green-700'
-            "
+          <Badge
+            :variant="item.type === 'character' ? 'default' : 'secondary'"
+            class="h-5 w-5 justify-center p-0 text-[10px]"
           >
             {{ item.type === 'character' ? 'C' : 'L' }}
-          </span>
+          </Badge>
           <span>{{ item.name }}</span>
         </button>
       </div>
@@ -141,43 +140,26 @@ function handleKeydown(event: KeyboardEvent): void {
         <label class="mb-1 block text-xs text-muted-foreground">
           {{ t('workspace.targetMood') }}
         </label>
-        <input
+        <Input
           v-model="targetMood"
           type="text"
           :placeholder="t('workspace.moodPlaceholder')"
           :disabled="isGenerating"
-          class="w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground focus:border-ring focus:outline-none disabled:cursor-not-allowed disabled:opacity-50"
         />
       </div>
-      <button
+      <Button
         :disabled="isGenerating || !beatText.trim()"
-        class="rounded-md bg-primary px-5 py-2 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
         @click="handleGenerate"
       >
         <span v-if="isGenerating" class="flex items-center gap-2">
-          <svg
-            class="h-4 w-4 animate-spin"
-            viewBox="0 0 24 24"
-            fill="none"
-          >
-            <circle
-              class="opacity-25"
-              cx="12"
-              cy="12"
-              r="10"
-              stroke="currentColor"
-              stroke-width="4"
-            />
-            <path
-              class="opacity-75"
-              fill="currentColor"
-              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"
-            />
+          <svg class="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4" />
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
           </svg>
           {{ t('workspace.generating') }}
         </span>
         <span v-else>{{ t('story.generate') }}</span>
-      </button>
+      </Button>
     </div>
 
     <!-- Hint -->

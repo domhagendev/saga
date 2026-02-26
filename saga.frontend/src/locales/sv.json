@@ -12,13 +12,14 @@
     "create": "Skapa"
   },
   "nav": {
-    "workspace": "Verkstad",
+    "workspace": "Börja skapa",
     "about": "Om oss",
     "contact": "Kontakt",
     "merch": "Merch"
   },
   "views": {
     "main": {
+      "companyName": "LILLEMOR.IO",
       "title": "SAGA"
     },
     "workspace": {
@@ -45,13 +46,13 @@
     "newBook": "Ny bok",
     "characters": "Karaktärer",
     "locations": "Platser",
-    "rules": "Världsregler",
+    "rules": "Världsbild",
     "pages": "Sidor",
     "generate": "Generera",
     "summary": "Sammanfattning"
   },
   "workspace": {
-    "welcome": "Välkommen till din verkstad",
+    "welcome": "Välkommen till din space",
     "selectOrCreate": "Skapa en ny bok för att komma igång",
     "atlas": "Atlas",
     "mood": "Stämning",

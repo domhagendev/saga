@@ -4,7 +4,7 @@ import sv from './locales/sv.json'
 
 export const i18n = createI18n({
   legacy: false,
-  locale: localStorage.getItem('saga-locale') || 'en',
+  locale: localStorage.getItem('saga-locale') || 'sv',
   fallbackLocale: 'en',
   messages: { en, sv },
 })
