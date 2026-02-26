@@ -50,7 +50,7 @@ watch(
 </script>
 
 <template>
-  <Card>
+  <Card class="flex flex-col">
     <CardHeader class="flex-row items-center justify-between space-y-0 pb-3">
       <div class="flex items-center gap-3">
         <span
@@ -79,7 +79,7 @@ watch(
 
     <Separator />
 
-    <CardContent class="pt-4">
+    <CardContent class="flex-1 pt-4">
       <!-- User note -->
       <div
         v-if="page.userNote"
