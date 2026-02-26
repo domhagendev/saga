@@ -1,5 +1,7 @@
 # Saga — Architecture
 
+> Last updated: 2026-02-26
+
 ## System Overview
 
 ```
@@ -8,21 +10,24 @@
 │  ┌─────────────────────────────────────────────────────┐    │
 │  │              Vue 3 SPA (saga.frontend)               │    │
 │  │  Tailwind v4 + shadcn-vue + Pinia + Vue Router      │    │
+│  │  Hosted: swa-saga-dev (Azure Static Web Apps)        │    │
 │  └──────────┬──────────────────┬───────────────────┘    │
 │             │                  │                         │
 └─────────────┼──────────────────┼─────────────────────────┘
               │                  │
     ┌─────────▼──────┐  ┌───────▼──────────┐
     │    Auth0        │  │  Saga Backend     │
-    │  (Login/JWT)    │  │  Azure Functions  │
-    └─────────┬──────┘  │  (Node.js 22)     │
-              │         └───┬──────┬────────┘
+    │  (Login/JWT)    │  │  func-saga-api-dev│
+    │  + useDevAuth   │  │  Azure Functions  │
+    │  (localhost)    │  │  (Node.js 22)     │
+    └─────────┬──────┘  └───┬──────┬────────┘
               │             │      │
               │    ┌────────▼──┐  ┌▼───────────────┐
               │    │  Azure     │  │  Google Gemini  │
-              │    │  Table     │  │  2.0 Flash /    │
-              │    │  Storage   │  │  1.5 Pro        │
-              │    └───────────┘  └─────────────────┘
+              │    │  Table     │  │  2.0 Flash      │
+              │    │  Storage   │  │  (free tier)    │
+              │    │ stsagadev  │  └─────────────────┘
+              │    └───────────┘
               │
     ┌─────────▼──────────────────┐
     │  Arrival API (External)     │
@@ -30,6 +35,25 @@
     │  /register, /lookup,        │
     │  /user/{id}/profile         │
     └────────────────────────────┘
+```
+
+## CI/CD Pipeline (GitHub Actions)
+
+```
+Push to main
+    │
+    ├─► Job 1: Deploy Infrastructure (Bicep)
+    │     └── az arm-deploy → rg-saga-weu-dev
+    │         (idempotent/incremental — only adds/updates, never removes)
+    │         Passes: geminiApiKey=${{ secrets.GEMINI_API_KEY }}
+    │
+    ├─► Job 2: Deploy Backend (needs: infra)
+    │     └── pnpm build → zip → az functionapp deployment source config-zip
+    │         (node-linker=hoisted .npmrc for flat node_modules)
+    │
+    └─► Job 3: Deploy Frontend (needs: infra)
+          └── pnpm build → Azure/static-web-apps-deploy@v1
+              (VITE_* env vars from GitHub vars)
 ```
 
 ## Table Storage Schema: `SagaEntities`
@@ -137,12 +161,30 @@ All entities share one table. `PartitionKey = User_{UserId}` ensures multi-tenan
 4. Frontend fetches profile → GET /api/user/{userId}/profile
 5. Protected API calls → JWT in Authorization header
 6. Backend validates JWT → extracts userId for PartitionKey
+
+Dev mode shortcut (localhost only):
+1. useDevAuth composable auto-authenticates
+2. Sends x-user-id header (hardcoded: 6077a911-81fb-43f8-b325-2c1f79d37c1e)
+3. No Auth0 round-trip needed for local development
 ```
 
 ## RBAC Relationships
 
 | Source | Target | Role |
 |---|---|---|
-| Function App (System-Assigned MI) | Storage Account | Storage Table Data Contributor |
-| Frontend SPA | Function App | API calls with Auth0 JWT |
+| Function App MI (`b21f62da-...`) | Storage Account `stsagadev` | Storage Table Data Contributor |
+| Dev User (`7b70e7fb-...`) | Storage Account `stsagadev` | Storage Table Data Contributor |
+| Frontend SPA | Function App | API calls with Auth0 JWT (or x-user-id in dev) |
 | Frontend SPA | Arrival API | API calls with Auth0 JWT |
+
+## Function App Settings (func-saga-api-dev)
+
+| Setting | Value | Source |
+|---|---|---|
+| `AZURE_STORAGE_ACCOUNT` | `stsagadev` | Bicep |
+| `GEMINI_API_KEY` | (secret) | GitHub Actions secret → Bicep param |
+| `FUNCTIONS_WORKER_RUNTIME` | `node` | Bicep |
+| `WEBSITE_NODE_DEFAULT_VERSION` | `~22` | Bicep |
+| `WEBSITE_RUN_FROM_PACKAGE` | `1` | Bicep |
+| `AUTH0_DOMAIN` | (configurable) | Bicep param |
+| `AUTH0_API_IDENTIFIER` | (configurable) | Bicep param |

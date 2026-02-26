@@ -22,6 +22,7 @@ const loaderStore = useWorkspaceLoaderStore()
 
 const currentPageNr = ref(1)
 const isGenerating = ref(false)
+const generateError = ref<string | null>(null)
 const isInitialized = ref(loaderStore.dataReady)
 
 const currentPage = computed(() =>
@@ -56,11 +57,16 @@ async function handleUpdateContent(content: string): Promise<void> {
 
 async function handleGenerate(beat: string, mood: string, _mentionedIds: string[]): Promise<void> {
   isGenerating.value = true
+  generateError.value = null
   try {
     const page = await bookStore.generatePage(beat, mood, _mentionedIds)
     if (page) {
       currentPageNr.value = page.pageNr
+    } else {
+      generateError.value = t('workspace.generateFailed')
     }
+  } catch (error) {
+    generateError.value = error instanceof Error ? error.message : t('workspace.generateFailed')
   } finally {
     isGenerating.value = false
   }
@@ -171,6 +177,11 @@ function handleNewBook(): void {
 
               <!-- Skeleton while AI is generating -->
               <StoryPageSkeleton v-if="isGenerating" />
+
+              <!-- Error message -->
+              <div v-if="generateError" class="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+                <p>{{ generateError }}</p>
+              </div>
             </div>
           </div>
         </ScrollArea>

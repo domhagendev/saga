@@ -1,5 +1,7 @@
 # Saga — Architecture Decision Records
 
+> Last updated: 2026-02-26
+
 ## ADR-001: Monorepo Structure
 **Date:** 2026-02-22 | **Status:** Accepted
 
@@ -57,3 +59,38 @@ Windows consumption plan (Y1) for Azure Functions. Node.js 22 LTS for latest lan
 **Date:** 2026-02-22 | **Status:** Accepted
 
 Azure Table Storage limits individual properties to 64KB. Page content is split into `content_1`, `content_2`, etc. properties when exceeding the limit. A shared utility handles split/join operations.
+
+## ADR-012: Dev Auth Bypass for Local Development
+**Date:** 2026-02-26 | **Status:** Accepted
+
+A `useDevAuth` composable (`saga.frontend/src/composables/useDevAuth.ts`) detects `localhost` + `import.meta.env.DEV` and auto-authenticates with a hardcoded user ID (`6077a911-81fb-43f8-b325-2c1f79d37c1e`). The `sagaApi` request helper sends `x-user-id` header instead of JWT Bearer token. Avoids Auth0 round-trips during local development while keeping the same APIs.
+
+## ADR-013: OIDC Federation for CI/CD
+**Date:** 2026-02-26 | **Status:** Accepted
+
+GitHub Actions authenticates to Azure via OIDC federation (Workload Identity Federation) — no stored client secrets. Uses `azure/login@v2` with `client-id`, `tenant-id`, `subscription-id` from GitHub secrets. More secure than service principal secrets.
+
+## ADR-014: Loading Screen with Pre-fetch Pattern
+**Date:** 2026-02-26 | **Status:** Accepted
+
+Navigation from MainView to WorkspaceView uses a loading overlay pattern:
+1. `LoadingOverlay.vue` — full-screen white overlay with logo and progress bar illusion
+2. `workspaceLoader` Pinia store — coordinates pre-fetching (books, then select first book) with a min 500ms display time
+3. `dataReady` flag prevents redundant fetches when WorkspaceView mounts
+
+This avoids the empty-state flash that occurs when navigating to the workspace before data is loaded.
+
+## ADR-015: 800 Character Page Limit
+**Date:** 2026-02-26 | **Status:** Accepted
+
+Changed from "500-800 words" to "at most 800 characters including spaces" per generated page. Keeps AI-generated content concise and fits better in the card-based UI. The constraint is enforced via the system instruction in `promptBuilder.ts`.
+
+## ADR-016: Gemini API Key via GitHub Secret
+**Date:** 2026-02-26 | **Status:** Accepted
+
+The `GEMINI_API_KEY` is stored as a GitHub Actions secret and passed to the Bicep deployment as an override parameter (`geminiApiKey=${{ secrets.GEMINI_API_KEY }}`). Without this, Bicep's default empty string would wipe the key on every deploy. The Bicep parameter is marked `@secure()`.
+
+## ADR-017: Storage Account Name Convention
+**Date:** 2026-02-26 | **Status:** Accepted
+
+Actual storage account deployed is `stsagadev` (not `stsagaweudev` as originally planned). Azure Storage account names must be 3-24 chars, lowercase alphanumeric only. The shorter name was chosen during initial deployment. All references (local.settings.json, Azure Function settings, Bicep) must use this exact name.

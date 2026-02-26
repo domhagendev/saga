@@ -64,6 +64,7 @@
     "beatHint": "Press Ctrl+Enter to generate. Type # to mention characters or locations.",
     "untitledPage": "Untitled page",
     "noPages": "No pages yet. Use the prompt below to generate your first page.",
+    "generateFailed": "Failed to generate page. Please try again.",
     "rollingSummary": "Rolling Summary",
     "noSummary": "No summary generated yet. It will appear after the first few pages.",
     "addCharacter": "Add Character",

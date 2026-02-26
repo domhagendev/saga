@@ -37,7 +37,9 @@ jobs:
           scope: resourcegroup
           resourceGroupName: ${{ env.RESOURCE_GROUP }}
           template: saga.backend/infra/main.bicep
-          parameters: saga.backend/infra/parameters/dev.bicepparam
+          parameters: >
+            saga.backend/infra/parameters/dev.bicepparam
+            geminiApiKey=${{ secrets.GEMINI_API_KEY }}
           failOnStdErr: false
 
   # ─── Backend ───

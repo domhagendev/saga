@@ -64,6 +64,7 @@
     "beatHint": "Tryck Ctrl+Enter för att generera. Skriv # för att nämna karaktärer eller platser.",
     "untitledPage": "Namnlös sida",
     "noPages": "Inga sidor ännu. Använd prompten nedan för att generera din första sida.",
+    "generateFailed": "Kunde inte generera sida. Försök igen.",
     "rollingSummary": "Löpande sammanfattning",
     "noSummary": "Ingen sammanfattning genererad ännu. Den visas efter de första sidorna.",
     "addCharacter": "Lägg till karaktär",
