@@ -27,6 +27,7 @@ Thumbs.db
 
 # Deploy artifacts (generated at deploy time)
 .npmrc
+*.zip
 
 # Vite
 *.local
