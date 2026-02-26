@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n'
 import { onMounted, ref, computed } from 'vue'
 import { useBookStore } from '@/stores/book'
 import { useUserStore } from '@/stores/user'
-import { loadMockData } from '@/stores/mockData'
 import type { Character, Location, WorldRule } from '@/stores/book'
 import BookSidebar from '@/components/workspace/BookSidebar.vue'
 import StoryPageComponent from '@/components/workspace/StoryPage.vue'
@@ -26,8 +25,6 @@ const currentPage = computed(() =>
 
 onMounted(async () => {
   await userStore.fetchProfile()
-  // Load mock data for development
-  loadMockData()
   // Navigate to the last page
   if (bookStore.sortedPages.length > 0) {
     const lastPage = bookStore.sortedPages[bookStore.sortedPages.length - 1]
@@ -130,7 +127,6 @@ function handleNewBook(): void {
       <p class="mt-2 text-sm text-muted-foreground">{{ t('workspace.selectOrCreate') }}</p>
       <button
         class="mt-6 rounded-md bg-primary px-6 py-2.5 text-sm font-medium text-primary-foreground transition-colors hover:bg-primary/90"
-        @click="loadMockData"
       >
         {{ t('story.newBook') }}
       </button>

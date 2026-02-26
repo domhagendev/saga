@@ -1,0 +1,130 @@
+name: Deploy Saga
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  id-token: write
+  contents: read
+
+env:
+  NODE_VERSION: '22'
+  PNPM_VERSION: '10'
+  RESOURCE_GROUP: rg-saga-weu-dev
+  FUNCTION_APP_NAME: func-saga-api-dev
+  SWA_NAME: swa-saga-dev
+
+jobs:
+  # ─── Infrastructure ───
+  deploy-infrastructure:
+    name: Deploy Infrastructure
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy Bicep
+        uses: azure/arm-deploy@v2
+        with:
+          scope: resourcegroup
+          resourceGroupName: ${{ env.RESOURCE_GROUP }}
+          template: saga.backend/infra/main.bicep
+          parameters: saga.backend/infra/parameters/dev.bicepparam
+          failOnStdErr: false
+
+  # ─── Backend ───
+  deploy-backend:
+    name: Deploy Backend
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: saga.backend/pnpm-lock.yaml
+
+      - name: Configure pnpm for deploy (hoisted)
+        working-directory: saga.backend
+        run: echo "node-linker=hoisted" > .npmrc
+
+      - name: Install dependencies
+        working-directory: saga.backend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        working-directory: saga.backend
+        run: pnpm build
+
+      - name: Create deployment package
+        working-directory: saga.backend
+        run: zip -r deploy.zip dist/ node_modules/ host.json package.json -x "*.d.ts" "*.d.ts.map"
+
+      - name: Azure Login
+        uses: azure/login@v2
+        with:
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+
+      - name: Deploy to Azure Functions
+        run: |
+          az functionapp deployment source config-zip \
+            -g ${{ env.RESOURCE_GROUP }} \
+            -n ${{ env.FUNCTION_APP_NAME }} \
+            --src saga.backend/deploy.zip
+
+  # ─── Frontend ───
+  deploy-frontend:
+    name: Deploy Frontend
+    runs-on: ubuntu-latest
+    needs: deploy-infrastructure
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'pnpm'
+          cache-dependency-path: saga.frontend/pnpm-lock.yaml
+
+      - name: Install dependencies
+        working-directory: saga.frontend
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        working-directory: saga.frontend
+        env:
+          VITE_AUTH0_DOMAIN: ${{ vars.AUTH0_DOMAIN }}
+          VITE_AUTH0_CLIENT_ID: ${{ vars.AUTH0_CLIENT_ID }}
+          VITE_AUTH0_API_IDENTIFIER: ${{ vars.AUTH0_API_IDENTIFIER }}
+          VITE_API_BASE_URL: ${{ vars.API_BASE_URL }}
+          VITE_ARRIVAL_API_BASE_URL: ${{ vars.ARRIVAL_API_BASE_URL }}
+        run: pnpm build
+
+      - name: Deploy to Azure Static Web Apps
+        uses: Azure/static-web-apps-deploy@v1
+        with:
+          azure_static_web_apps_api_token: ${{ secrets.SWA_DEPLOYMENT_TOKEN }}
+          action: upload
+          app_location: saga.frontend
+          output_location: dist
+          skip_app_build: true

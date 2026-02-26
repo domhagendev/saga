@@ -1,4 +1,5 @@
 import type { Book, Character, Location, WorldRule, StoryPage, RollingSummary } from '@/stores/book'
+import { isDevMode } from '@/composables/useDevAuth'
 
 const BASE_URL = import.meta.env.VITE_API_BASE_URL
 
@@ -7,13 +8,21 @@ async function request<T>(
   token: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers as Record<string, string>,
+  }
+
+  // In dev mode, pass user ID header instead of JWT bearer token
+  if (isDevMode()) {
+    headers['x-user-id'] = '6077a911-81fb-43f8-b325-2c1f79d37c1e'
+  } else {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
+    headers,
   })
 
   if (!response.ok) {

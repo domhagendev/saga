@@ -1,8 +1,11 @@
 import { defineStore } from 'pinia'
 import { computed } from 'vue'
 import { useAuth0 } from '@auth0/auth0-vue'
+import { useDevAuth, isDevMode } from '@/composables/useDevAuth'
 
 export const useAuthStore = defineStore('auth', () => {
+  const auth = isDevMode() ? useDevAuth() : useAuth0()
+
   const {
     isAuthenticated,
     isLoading,
@@ -10,7 +13,7 @@ export const useAuthStore = defineStore('auth', () => {
     loginWithRedirect,
     logout,
     getAccessTokenSilently,
-  } = useAuth0()
+  } = auth
 
   const userId = computed(() => user.value?.sub ?? null)
   const email = computed(() => user.value?.email ?? null)

@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuth0 } from '@auth0/auth0-vue'
+import { isDevMode } from '@/composables/useDevAuth'
 import MainView from '@/views/MainView.vue'
 
 const router = createRouter({
@@ -36,6 +37,9 @@ const router = createRouter({
 
 router.beforeEach((to) => {
   if (to.meta.requiresAuth) {
+    // Dev mode on localhost — always authenticated
+    if (isDevMode()) return true
+
     const { isAuthenticated, loginWithRedirect } = useAuth0()
     if (!isAuthenticated.value) {
       loginWithRedirect({

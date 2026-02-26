@@ -79,6 +79,10 @@ resource functionApp 'Microsoft.Web/sites@2023-12-01' = {
           value: geminiApiKey
         }
         {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {
           name: 'AUTH0_DOMAIN'
           value: auth0Domain
         }

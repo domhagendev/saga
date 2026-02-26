@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import { useAuthStore } from './auth'
 import { arrivalApi, type ArrivalUserProfile } from '@/services/arrivalApi'
+import { isDevMode } from '@/composables/useDevAuth'
 
 export const useUserStore = defineStore('user', () => {
   const profile = ref<ArrivalUserProfile | null>(null)
@@ -17,6 +18,13 @@ export const useUserStore = defineStore('user', () => {
 
     try {
       const token = await authStore.getToken()
+
+      // In dev mode, use lookup by email (no auth required by Arrival API)
+      if (isDevMode() && authStore.email) {
+        profile.value = await arrivalApi.lookupUser(authStore.email, token)
+        return
+      }
+
       profile.value = await arrivalApi.getProfile(authStore.userId, token)
     } catch (err) {
       error.value = err instanceof Error ? err.message : 'Failed to load profile'

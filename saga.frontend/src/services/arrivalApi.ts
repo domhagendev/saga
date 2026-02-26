@@ -1,3 +1,5 @@
+import { isDevMode } from '@/composables/useDevAuth'
+
 const BASE_URL = import.meta.env.VITE_ARRIVAL_API_BASE_URL
 
 export interface ArrivalUserProfile {
@@ -22,13 +24,19 @@ async function request<T>(
   token: string,
   options: RequestInit = {}
 ): Promise<T> {
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...options.headers as Record<string, string>,
+  }
+
+  // Only send Authorization header when not in dev mode
+  if (!isDevMode()) {
+    headers['Authorization'] = `Bearer ${token}`
+  }
+
   const response = await fetch(`${BASE_URL}${path}`, {
     ...options,
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-      ...options.headers,
-    },
+    headers,
   })
 
   if (!response.ok) {
