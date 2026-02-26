@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n'
 import { ref, watch } from 'vue'
 import type { Book, StoryPage } from '@/stores/book'
 import { Button } from '@/components/ui/button'
-import { Card, CardContent, CardHeader } from '@/components/ui/card'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 
