@@ -1,12 +1,11 @@
 <script setup lang="ts">
 import { useI18n } from 'vue-i18n'
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, nextTick } from 'vue'
 import { useBookStore } from '@/stores/book'
 import { useWorkspaceLoaderStore } from '@/stores/workspaceLoader'
 import type { Character, Location, WorldRule } from '@/stores/book'
 import BookSidebar from '@/components/workspace/BookSidebar.vue'
 import StoryPageComponent from '@/components/workspace/StoryPage.vue'
-import StoryPageSkeleton from '@/components/workspace/StoryPageSkeleton.vue'
 import BeatInput from '@/components/workspace/BeatInput.vue'
 import CharacterPanel from '@/components/workspace/CharacterPanel.vue'
 import LocationPanel from '@/components/workspace/LocationPanel.vue'
@@ -24,6 +23,7 @@ const currentPageNr = ref(1)
 const isGenerating = ref(false)
 const generateError = ref<string | null>(null)
 const isInitialized = ref(loaderStore.dataReady)
+const storyContentRef = ref<HTMLElement | null>(null)
 
 const currentPage = computed(() =>
   bookStore.sortedPages.find((p) => p.pageNr === currentPageNr.value) ?? null
@@ -62,6 +62,9 @@ async function handleGenerate(beat: string, mood: string, _mentionedIds: string[
     const page = await bookStore.generatePage(beat, mood, _mentionedIds)
     if (page) {
       currentPageNr.value = page.pageNr
+      // Scroll the new page into view after DOM updates
+      await nextTick()
+      storyContentRef.value?.scrollIntoView({ behavior: 'smooth', block: 'end' })
     } else {
       generateError.value = t('workspace.generateFailed')
     }
@@ -160,31 +163,30 @@ function handleNewBook(): void {
 
       <!-- Center - Story pages + Beat input -->
       <div class="flex flex-1 flex-col overflow-hidden">
-        <ScrollArea class="flex-1">
-          <div class="p-6">
-            <div class="mx-auto max-w-3xl space-y-6">
+        <div class="flex-1 overflow-y-auto">
+          <div ref="storyContentRef" class="flex min-h-full flex-col p-6 pb-0">
+            <div class="mx-auto flex w-full max-w-3xl flex-1 flex-col">
               <StoryPageComponent
-                v-if="currentPage"
-                :page="currentPage"
+                v-if="currentPage || isGenerating"
+                :page="currentPage ?? { pageNr: (bookStore.sortedPages.length || 0) + 1, bookId: bookStore.currentBook?.bookId ?? '', content: '', userNote: '', targetMood: '', orderIndex: 0 }"
+                :is-loading="isGenerating"
+                class="flex-1"
                 @update:content="handleUpdateContent"
               />
-              <div v-else-if="!isGenerating" class="flex flex-col items-center gap-2 py-16 text-center">
+              <div v-else class="flex min-h-full flex-col items-center justify-center gap-2 text-center">
                 <svg class="h-10 w-10 text-muted-foreground/30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
                   <path d="M19.5 14.25v-2.625a3.375 3.375 0 00-3.375-3.375h-1.5A1.125 1.125 0 0113.5 7.125v-1.5a3.375 3.375 0 00-3.375-3.375H8.25m0 12.75h7.5m-7.5 3H12M10.5 2.25H5.625c-.621 0-1.125.504-1.125 1.125v17.25c0 .621.504 1.125 1.125 1.125h12.75c.621 0 1.125-.504 1.125-1.125V11.25a9 9 0 00-9-9z" />
                 </svg>
                 <p class="text-sm text-muted-foreground">{{ t('workspace.noPages') }}</p>
               </div>
 
-              <!-- Skeleton while AI is generating -->
-              <StoryPageSkeleton v-if="isGenerating" />
-
               <!-- Error message -->
-              <div v-if="generateError" class="rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
+              <div v-if="generateError" class="mt-6 rounded-md border border-destructive/50 bg-destructive/10 p-4 text-sm text-destructive">
                 <p>{{ generateError }}</p>
               </div>
             </div>
           </div>
-        </ScrollArea>
+        </div>
 
         <!-- Beat input - fixed at bottom -->
         <div class="shrink-0 p-4">

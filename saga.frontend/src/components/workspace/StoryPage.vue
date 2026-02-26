@@ -10,6 +10,7 @@ import { Separator } from '@/components/ui/separator'
 
 const props = defineProps<{
   page: StoryPage
+  isLoading?: boolean
 }>()
 
 const emit = defineEmits<{
@@ -87,8 +88,28 @@ watch(
         {{ page.userNote }}
       </div>
 
+      <!-- Skeleton content while generating -->
+      <div v-if="isLoading" class="space-y-4">
+        <div class="space-y-2">
+          <div class="h-4 w-full animate-pulse rounded bg-muted" />
+          <div class="h-4 w-full animate-pulse rounded bg-muted" />
+          <div class="h-4 w-11/12 animate-pulse rounded bg-muted" />
+        </div>
+        <div class="space-y-2">
+          <div class="h-4 w-full animate-pulse rounded bg-muted" />
+          <div class="h-4 w-full animate-pulse rounded bg-muted" />
+          <div class="h-4 w-10/12 animate-pulse rounded bg-muted" />
+          <div class="h-4 w-9/12 animate-pulse rounded bg-muted" />
+        </div>
+        <div class="space-y-2">
+          <div class="h-4 w-full animate-pulse rounded bg-muted" />
+          <div class="h-4 w-full animate-pulse rounded bg-muted" />
+          <div class="h-4 w-8/12 animate-pulse rounded bg-muted" />
+        </div>
+      </div>
+
       <!-- Page content - reading mode -->
-      <div v-if="!isEditing" class="prose max-w-none prose-stone">
+      <div v-else-if="!isEditing" class="prose max-w-none prose-stone">
         <p
           v-for="(paragraph, idx) in paragraphs"
           :key="idx"
