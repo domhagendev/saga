@@ -4,6 +4,7 @@ import { useRouter } from 'vue-router'
 import { useAuthStore } from '@/stores/auth'
 import { useWorkspaceLoaderStore } from '@/stores/workspaceLoader'
 import { Button } from '@/components/ui/button'
+import AuthDropdown from '@/components/layout/AuthDropdown.vue'
 
 const { t } = useI18n()
 const router = useRouter()
@@ -22,6 +23,9 @@ async function handleWorkspaceClick(): Promise<void> {
 </script>
 
 <template>
+  <div class="fixed right-4 top-4 z-50">
+    <AuthDropdown />
+  </div>
   <main class="flex min-h-screen flex-col items-center justify-center px-4">
     <!-- Background image — hidden on mobile, covers full screen on md+ -->
     <img

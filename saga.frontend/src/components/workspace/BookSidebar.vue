@@ -2,7 +2,6 @@
 import { useI18n } from 'vue-i18n'
 import { ref, watch } from 'vue'
 import type { Book, StoryPage } from '@/stores/book'
-import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Separator } from '@/components/ui/separator'
 
@@ -92,7 +91,7 @@ function cancelEditing(): void {
               class="flex h-5 w-5 shrink-0 items-center justify-center rounded text-xs font-medium"
               :class="
                 page.pageNr === currentPageNr
-                  ? 'bg-primary text-primary-foreground'
+                  ? 'bg-stone-600 text-stone-100 dark:bg-stone-500'
                   : 'bg-muted text-muted-foreground'
               "
             >
@@ -106,12 +105,5 @@ function cancelEditing(): void {
       </div>
     </ScrollArea>
 
-    <!-- Bottom actions -->
-    <Separator />
-    <div class="p-3">
-      <Button variant="outline" class="w-full" @click="emit('newBook')">
-        {{ t('story.newBook') }}
-      </Button>
-    </div>
   </aside>
 </template>

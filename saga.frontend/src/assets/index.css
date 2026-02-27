@@ -82,3 +82,36 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ── Reusable minimal scrollbar ─────────────────────────────────────────────
+   Chrome 121+ ignores ::-webkit-scrollbar rules when scrollbar-width is set,
+   so we gate the standard properties to Firefox only via @supports. */
+
+/* Chrome / Safari / Edge — webkit pseudo-elements */
+.scrollbar-saga::-webkit-scrollbar {
+  width: 6px;
+  height: 4px;
+}
+.scrollbar-saga::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scrollbar-saga::-webkit-scrollbar-button {
+  display: none;
+  height: 0;
+  width: 0;
+}
+.scrollbar-saga::-webkit-scrollbar-thumb {
+  background-color: oklch(0.68 0 0 / 0.35);
+  border-radius: 9999px;
+}
+.scrollbar-saga::-webkit-scrollbar-thumb:hover {
+  background-color: oklch(0.55 0 0 / 0.55);
+}
+
+/* Firefox only — standard scrollbar properties */
+@supports not selector(::-webkit-scrollbar) {
+  .scrollbar-saga {
+    scrollbar-width: 6px;
+    scrollbar-color: oklch(0.68 0 0 / 0.35) transparent;
+  }
+}
