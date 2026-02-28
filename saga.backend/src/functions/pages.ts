@@ -1,7 +1,7 @@
 import { app, HttpRequest, HttpResponseInit, InvocationContext } from '@azure/functions'
 import { getSagaTableClient } from '../services/tableStorage.js'
 import { getFlashModel } from '../services/gemini.js'
-import { buildPagePrompt, buildSummaryUpdatePrompt } from '../services/promptBuilder.js'
+import { buildPagePrompt, buildEditPagePrompt, buildSummaryUpdatePrompt } from '../services/promptBuilder.js'
 import { chunkContent, reassembleContent } from '../utils/chunking.js'
 import { extractHashtags, stripHashtags } from '../utils/hashtag.js'
 import {
@@ -14,6 +14,7 @@ import {
   type BookEntity,
   type SummaryEntity,
   type GeneratePageRequest,
+  type EditPageRequest,
   type UpdatePageRequest,
   type PageResponse,
 } from '../types/entities.js'
@@ -205,6 +206,139 @@ async function generatePage(
   }
 }
 
+async function editPage(
+  request: HttpRequest,
+  context: InvocationContext
+): Promise<HttpResponseInit> {
+  try {
+    const userId = request.headers.get('x-user-id') || ''
+    const bookId = request.params.bookId || ''
+    const pageNrStr = request.params.pageNr || ''
+    const body = (await request.json()) as EditPageRequest
+    const client = getSagaTableClient()
+    const pk = makePartitionKey(userId)
+    const rk = makeRowKey('PAGE', bookId, pageNrStr.padStart(5, '0'))
+
+    // Fetch the page to revise
+    let existingPage: PageEntity
+    try {
+      existingPage = await client.getEntity<PageEntity>(pk, rk)
+    } catch {
+      return { status: 404, jsonBody: { error: 'Page not found' } }
+    }
+    const currentContent = reassembleContent(existingPage)
+
+    // Fetch book metadata and world-building entities in parallel
+    const [book, characters, locations, worldRules] = await Promise.all([
+      client.getEntity<BookEntity>(pk, makeRowKey('BOOK', bookId)),
+      fetchEntities<CharacterEntity>(pk, `CHAR_${bookId}_`),
+      fetchEntities<LocationEntity>(pk, `LOC_${bookId}_`),
+      fetchEntities<WorldRuleEntity>(pk, `RULE_${bookId}_`),
+    ])
+
+    // Fetch summary
+    let summary: SummaryEntity | null = null
+    try {
+      summary = (await client.getEntity<SummaryEntity>(pk, makeRowKey('SUM', bookId))) as SummaryEntity
+    } catch {
+      // No summary yet
+    }
+
+    // Last two pages excluding the page being edited
+    const allPages = await fetchEntities<PageEntity>(pk, `PAGE_${bookId}_`)
+    allPages.sort((a, b) => (a.orderIndex ?? 0) - (b.orderIndex ?? 0))
+    const otherPages = allPages.filter((p) => p.rowKey !== rk)
+    const lastTwoPages = otherPages.slice(-2)
+
+    // Resolve mentioned entity IDs to names
+    const mentionedNames: string[] = []
+    const seenNames = new Set<string>()
+
+    const hashtags = extractHashtags(body.userNote)
+    for (const tag of hashtags) {
+      const matchedChar = characters.find((c) => c.name.toLowerCase() === tag.toLowerCase())
+      if (matchedChar && !seenNames.has(matchedChar.name)) {
+        mentionedNames.push(matchedChar.name)
+        seenNames.add(matchedChar.name)
+      }
+      const matchedLoc = locations.find(
+        (l) => l.name.replace(/\s/g, '').toLowerCase() === tag.toLowerCase()
+      )
+      if (matchedLoc && !seenNames.has(matchedLoc.name)) {
+        mentionedNames.push(matchedLoc.name)
+        seenNames.add(matchedLoc.name)
+      }
+    }
+
+    if (body.mentionedEntities && body.mentionedEntities.length > 0) {
+      for (const entityId of body.mentionedEntities) {
+        const charMatch = characters.find((c) => {
+          const parts = c.rowKey.split('_')
+          return parts[parts.length - 1] === entityId
+        })
+        if (charMatch && !seenNames.has(charMatch.name)) {
+          mentionedNames.push(charMatch.name)
+          seenNames.add(charMatch.name)
+        }
+        const locMatch = locations.find((l) => {
+          const parts = l.rowKey.split('_')
+          return parts[parts.length - 1] === entityId
+        })
+        if (locMatch && !seenNames.has(locMatch.name)) {
+          mentionedNames.push(locMatch.name)
+          seenNames.add(locMatch.name)
+        }
+      }
+    }
+
+    // Build edit prompt
+    const prompt = buildEditPagePrompt({
+      worldRules: worldRules as WorldRuleEntity[],
+      characters: characters as CharacterEntity[],
+      locations: locations as LocationEntity[],
+      summary,
+      lastTwoPages: lastTwoPages as PageEntity[],
+      userNote: stripHashtags(body.userNote),
+      targetMood: body.targetMood,
+      mentionedEntityNames: mentionedNames,
+      globalGenre: (book as BookEntity).globalGenre,
+      globalMood: (book as BookEntity).globalMood,
+      currentContent,
+    })
+
+    // Generate revised text with Gemini Flash
+    const model = getFlashModel()
+    const result = await model.generateContent({
+      systemInstruction: prompt.systemInstruction,
+      contents: [{ role: 'user', parts: [{ text: prompt.userMessage }] }],
+    })
+
+    const revisedText = result.response.text()
+
+    // Overwrite the page entity with revised content
+    const chunks = chunkContent(revisedText)
+    const updatedEntity = {
+      partitionKey: pk,
+      rowKey: rk,
+      userNote: body.userNote,
+      targetMood: body.targetMood,
+      orderIndex: existingPage.orderIndex,
+      ...chunks,
+    }
+    await client.updateEntity(updatedEntity, 'Replace')
+
+    context.log(`Page ${pageNrStr} revised for book ${bookId}`)
+    return { status: 200, jsonBody: toResponse(updatedEntity as PageEntity, bookId) }
+  } catch (error: unknown) {
+    context.error('Failed to edit page:', error)
+    const errMsg = error instanceof Error ? error.message : String(error)
+    if (errMsg.includes('429') || errMsg.includes('quota')) {
+      return { status: 429, jsonBody: { error: 'AI quota exceeded. Please try again later.' } }
+    }
+    return { status: 500, jsonBody: { error: 'Internal server error' } }
+  }
+}
+
 async function updatePage(
   request: HttpRequest,
   context: InvocationContext
@@ -340,6 +474,13 @@ app.http('generatePage', {
   authLevel: 'anonymous',
   route: 'books/{bookId}/pages/generate',
   handler: generatePage,
+})
+
+app.http('editPage', {
+  methods: ['POST'],
+  authLevel: 'anonymous',
+  route: 'books/{bookId}/pages/{pageNr}/edit',
+  handler: editPage,
 })
 
 app.http('updatePage', {

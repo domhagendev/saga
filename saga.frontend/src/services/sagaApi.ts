@@ -157,6 +157,18 @@ export const sagaApi = {
     })
   },
 
+  async editPage(
+    bookId: string,
+    pageNr: number,
+    data: { userNote: string; targetMood: string; mentionedEntities?: string[] },
+    token: string
+  ): Promise<StoryPage> {
+    return request<StoryPage>(`/books/${bookId}/pages/${pageNr}/edit`, token, {
+      method: 'POST',
+      body: JSON.stringify(data),
+    })
+  },
+
   async updatePage(bookId: string, pageNr: number, data: Partial<StoryPage>, token: string): Promise<StoryPage> {
     return request<StoryPage>(`/books/${bookId}/pages/${pageNr}`, token, {
       method: 'PATCH',

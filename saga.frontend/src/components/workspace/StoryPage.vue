@@ -3,6 +3,7 @@ import { useI18n } from 'vue-i18n'
 import { ref, computed, watch, nextTick } from 'vue'
 import type { StoryPage } from '@/stores/book'
 import { Button } from '@/components/ui/button'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const props = defineProps<{
   page: StoryPage
@@ -61,7 +62,7 @@ watch(
 </script>
 
 <template>
-  <div class="flex min-h-0 flex-col rounded-2xl bg-stone-50 dark:bg-stone-900/50">
+  <div class="flex min-h-0 flex-col rounded-2xl my-4 bg-stone-50 dark:bg-stone-900/50">
     <!-- Page header -->
     <div class="h-16 flex items-center justify-between px-6 py-4">
       <div class="flex items-center gap-3">
@@ -113,7 +114,7 @@ watch(
     <div class="mx-6 h-px bg-stone-200 dark:bg-stone-800" />
 
     <!-- Content area -->
-    <div class="flex-1 px-6 py-5 overflow-y-auto mb-4 scrollbar-saga">
+    <ScrollArea class="flex-1 px-6 py-5 overflow-y-auto mb-4">
       <!-- User note -->
       <div
         v-if="page.userNote"
@@ -160,6 +161,6 @@ watch(
           class="w-full resize-none bg-transparent py-1 text-[15px] leading-relaxed text-stone-800 placeholder:text-stone-400 focus:outline-none dark:text-stone-200"
         />
       </div>
-    </div>
+    </ScrollArea>
   </div>
 </template>

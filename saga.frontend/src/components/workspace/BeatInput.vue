@@ -17,6 +17,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   generate: [beat: string, mood: string, mentionedIds: string[]]
+  edit: [beat: string, mood: string, mentionedIds: string[]]
   done: []
 }>()
 
@@ -101,7 +102,11 @@ function insertMention(item: { id: string; name: string }): void {
 
 function handleGenerate(): void {
   if (!beatText.value.trim()) return
-  emit('generate', beatText.value, targetMood.value, mentionedIds.value)
+  if (props.pageJustGenerated && !props.isFirstPage) {
+    emit('edit', beatText.value, targetMood.value, mentionedIds.value)
+  } else {
+    emit('generate', beatText.value, targetMood.value, mentionedIds.value)
+  }
   beatText.value = ''
   targetMood.value = ''
   mentionedIds.value = []
@@ -135,7 +140,7 @@ function handleKeydown(event: KeyboardEvent): void {
         :disabled="isGenerating"
         :maxlength="MAX_LENGTH"
         rows="2"
-        class="min-h-24 w-full resize-none overflow-hidden rounded-xl bg-stone-100 px-4 py-3 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-800/60 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:ring-stone-600/50"
+        class="min-h-24 w-full resize-none overflow-hidden rounded-xl bg-stone-100 px-4 py-3  text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-800/60 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:ring-stone-600/50"
         @input="handleInput"
         @keydown="handleKeydown"
       />
@@ -182,14 +187,14 @@ function handleKeydown(event: KeyboardEvent): void {
           type="text"
           :placeholder="t('workspace.moodPlaceholder')"
           :disabled="isGenerating"
-          class="w-full rounded-xl bg-stone-100 px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-800/60 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:ring-stone-600/50"
+          class="w-full rounded-xl bg-stone-100  px-4 py-2.5 text-sm text-stone-800 placeholder:text-stone-400 focus:outline-none focus:ring-2 focus:ring-stone-400/50 disabled:cursor-not-allowed disabled:opacity-50 dark:bg-stone-800/60 dark:text-stone-200 dark:placeholder:text-stone-500 dark:focus:ring-stone-600/50"
         />
       </div>
 
       <!-- Generate / Edit button -->
       <Button
         :disabled="isGenerating || !beatText.trim()"
-        class="bg-stone-700 text-stone-100 hover:bg-stone-600 dark:bg-stone-600 dark:hover:bg-stone-500"
+        class=" bg-stone-700 text-stone-100 hover:bg-stone-600 dark:bg-stone-600 dark:hover:bg-stone-500"
         @click="handleGenerate"
       >
         <span v-if="isGenerating" class="flex items-center gap-2">

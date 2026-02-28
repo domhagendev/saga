@@ -127,10 +127,10 @@ function submitAdd(): void {
         :key="char.charId"
         class="group rounded-md transition-colors hover:bg-accent/50"
       >
-        <div class="flex items-center gap-2.5 px-2 py-2">
+        <div class="flex items-center gap-2.5">
           <!-- Active toggle -->
           <button
-            class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
+            class="ml-2 flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 transition-colors"
             :class="
               char.isActive
                 ? 'border-blue-500 bg-blue-500'
@@ -153,7 +153,7 @@ function submitAdd(): void {
 
           <!-- Name + traits preview -->
           <button
-            class="flex-1 text-left"
+            class="py-2 flex-1 text-left"
             @click="toggleExpand(char.charId)"
           >
             <span
@@ -162,7 +162,7 @@ function submitAdd(): void {
             >
               {{ char.name }}
             </span>
-            <span class="ml-2 text-xs text-muted-foreground">{{ char.traits }}</span>
+            <!-- <span class="ml-2 text-xs text-muted-foreground">{{ char.traits }}</span> -->
           </button>
 
           <!-- Delete -->
@@ -172,7 +172,7 @@ function submitAdd(): void {
                 <Button
                   variant="ghost"
                   size="icon-sm"
-                  class="h-6 w-6 opacity-0 group-hover:opacity-100"
+                  class="h-6 w-6 opacity-0 group-hover:opacity-100 mr-2"
                   @click="emit('remove', char.charId)"
                 >
                   <svg class="h-3.5 w-3.5 text-muted-foreground hover:text-destructive" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -186,14 +186,19 @@ function submitAdd(): void {
         </div>
 
         <!-- Expanded details -->
-        <div v-if="expandedId === char.charId" class="mx-2 mb-2 rounded-md bg-muted/50 px-3 py-2.5">
+        <div v-if="expandedId === char.charId" class="mx-2 mb-2">
+          <div class="mb-1 h-px bg-stone-200 dark:bg-stone-800" />
           <div class="space-y-1.5 text-sm">
             <div>
-              <span class="font-medium text-foreground">{{ t('workspace.description') }}:</span>
+              <span class="font-medium text-foreground">{{ t('workspace.traits') }}</span>
+              <p class="mt-0.5 text-muted-foreground">{{ char.traits }}</p>
+            </div>
+            <div>
+              <span class="font-medium text-foreground">{{ t('workspace.description') }}</span>
               <p class="mt-0.5 text-muted-foreground">{{ char.description }}</p>
             </div>
             <div v-if="char.motivation">
-              <span class="font-medium text-foreground">{{ t('workspace.motivation') }}:</span>
+              <span class="font-medium text-foreground">{{ t('workspace.motivation') }}</span>
               <p class="mt-0.5 text-muted-foreground">{{ char.motivation }}</p>
             </div>
           </div>

@@ -47,7 +47,7 @@ async function handleWorkspaceClick(): Promise<void> {
         <Button
           variant="outline"
           :disabled="loaderStore.isLoading"
-          class="border-cyan-400 bg-cyan-400 px-12 text-lg text-white hover:border-cyan-200 hover:bg-cyan-200 hover:text-white"
+          class="border-[#bcd3c5] bg-[#bcd3c5] px-12 text-lg text-white hover:border-[#dce8d7] hover:bg-[#dce8d7] hover:text-white"
           @click="handleWorkspaceClick"
         >
           {{ t('nav.workspace') }}

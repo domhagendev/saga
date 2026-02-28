@@ -3,7 +3,6 @@ import { useI18n } from 'vue-i18n'
 import { ref, watch } from 'vue'
 import type { Book, StoryPage } from '@/stores/book'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { Separator } from '@/components/ui/separator'
 
 const props = defineProps<{
   book: Book
@@ -46,9 +45,9 @@ function cancelEditing(): void {
 </script>
 
 <template>
-  <aside class="flex h-full flex-col">
+  <aside class="flex h-min-400px h-max-[calc(100%-96px)] flex-col rounded-2xl py-4 mx-2 mt-4 bg-stone-50">
     <!-- Book info -->
-    <div class="p-4">
+    <div class="pb-4 px-4">
       <input
         v-if="isEditingTitle"
         v-model="editTitle"
@@ -67,22 +66,23 @@ function cancelEditing(): void {
       </h2>
     </div>
 
-    <Separator />
+    <!-- Subtle divider -->
+    <div class="mx-4 h-px bg-stone-200 dark:bg-stone-800" />
 
     <!-- Page list -->
     <ScrollArea class="flex-1">
-      <div class="p-2">
-        <h3 class="mb-2 px-2 text-xs font-semibold tracking-wide text-muted-foreground uppercase">
+      <div class="py-4 px-4">
+        <h3 class="text-xs font-semibold tracking-wide text-muted-foreground uppercase">
           {{ t('story.pages') }}
         </h3>
         <nav class="space-y-0.5">
           <button
             v-for="page in pages"
             :key="page.pageNr"
-            class="flex w-full items-center gap-2.5 rounded-md px-3 py-2 text-left text-sm transition-colors"
+            class="flex w-full items-center gap-2.5 rounded-md py-2 text-left text-sm transition-colors"
             :class="
               page.pageNr === currentPageNr
-                ? 'bg-accent text-accent-foreground font-medium'
+                ? 'bg-stone-50 text-accent-foreground font-medium'
                 : 'text-muted-foreground hover:bg-accent/50 hover:text-foreground'
             "
             @click="emit('selectPage', page.pageNr)"

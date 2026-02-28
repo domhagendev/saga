@@ -65,7 +65,7 @@
     "moodPlaceholder": "e.g. Tense, Hopeful, Dark",
     "generating": "Generating...",
     "beatHint": "Press Ctrl+Enter to generate. Type # to mention characters or locations.",
-    "untitledPage": "Untitled page",
+    "untitledPage": "",
     "noPages": "No pages yet. Use the prompt below to generate your first page.",
     "generateFailed": "Failed to generate page. Please try again.",
     "rollingSummary": "Rolling Summary",

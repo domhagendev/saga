@@ -104,6 +104,76 @@ export function buildPagePrompt(ctx: PromptContext): AssembledPrompt {
 }
 
 /**
+ * Builds a prompt for AI-driven revision of an existing page.
+ *
+ * Structure:
+ *   SYSTEM: world context + revision instruction
+ *   USER:   rolling summary + recent pages + current page text + edit instructions
+ */
+export function buildEditPagePrompt(ctx: PromptContext & { currentContent: string }): AssembledPrompt {
+  // ─── System Instruction ───
+  const systemParts: string[] = [
+    `You are a creative fiction writer. Your task is to REVISE an existing story page based on the user's instructions.`,
+    `A ${ctx.globalGenre} story with a ${ctx.globalMood} mood.`,
+    `Rewrite the page according to the instructions while preserving character voices, style, and plot continuity.`,
+    `IMPORTANT: The revised page must be at most 2000 characters including spaces. Return ONLY the revised page text — no commentary, no preamble.`,
+  ]
+
+  if (ctx.worldRules.length > 0) {
+    systemParts.push('\n## World Rules')
+    for (const rule of ctx.worldRules) {
+      systemParts.push(`- **${rule.title}**: ${rule.description}`)
+    }
+  }
+
+  if (ctx.characters.length > 0) {
+    systemParts.push('\n## Characters')
+    for (const char of ctx.characters) {
+      const parts = [`**${char.name}**: ${char.description}`]
+      if (char.traits) parts.push(`Traits: ${char.traits}`)
+      if (char.motivation) parts.push(`Motivation: ${char.motivation}`)
+      systemParts.push(`- ${parts.join('. ')}`)
+    }
+  }
+
+  if (ctx.locations.length > 0) {
+    systemParts.push('\n## Locations')
+    for (const loc of ctx.locations) {
+      systemParts.push(`- **${loc.name}**: ${loc.description}. Atmosphere: ${loc.atmosphere}`)
+    }
+  }
+
+  // ─── User Message ───
+  const userParts: string[] = []
+
+  if (ctx.summary?.rollingSummary) {
+    userParts.push(`## Story So Far\n${ctx.summary.rollingSummary}`)
+  }
+
+  if (ctx.lastTwoPages.length > 0) {
+    userParts.push('## Recent Pages')
+    for (const page of ctx.lastTwoPages) {
+      const content = reassembleContent(page)
+      userParts.push(`### Page ${page.orderIndex}\n${content}`)
+    }
+  }
+
+  userParts.push(`## Current Page (to be revised)\n${ctx.currentContent}`)
+
+  const editParts: string[] = [`## Revision Instructions\n${ctx.userNote}`]
+  if (ctx.targetMood) editParts.push(`Target mood: ${ctx.targetMood}`)
+  if (ctx.mentionedEntityNames && ctx.mentionedEntityNames.length > 0) {
+    editParts.push(`Focus on these entities: ${ctx.mentionedEntityNames.join(', ')}`)
+  }
+  userParts.push(editParts.join('\n'))
+
+  return {
+    systemInstruction: systemParts.join('\n'),
+    userMessage: userParts.join('\n\n'),
+  }
+}
+
+/**
  * Builds a prompt to update the rolling summary after a new page is generated.
  */
 export function buildSummaryUpdatePrompt(

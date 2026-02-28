@@ -287,6 +287,26 @@ export const useBookStore = defineStore('book', () => {
     }
   }
 
+  async function editPage(pageNr: number, userNote: string, targetMood: string, mentionedIds: string[]): Promise<StoryPage | null> {
+    if (!currentBook.value) return null
+    const authStore = useAuthStore()
+    try {
+      const token = await authStore.getToken()
+      const updated = await sagaApi.editPage(
+        currentBook.value.bookId,
+        pageNr,
+        { userNote, targetMood, mentionedEntities: mentionedIds },
+        token
+      )
+      const idx = pages.value.findIndex((p) => p.pageNr === pageNr)
+      if (idx !== -1) pages.value[idx] = updated
+      return updated
+    } catch (error) {
+      console.error('Failed to edit page:', error)
+      return null
+    }
+  }
+
   async function updatePageContent(pageNr: number, content: string): Promise<void> {
     if (!currentBook.value) return
     const authStore = useAuthStore()
@@ -339,6 +359,7 @@ export const useBookStore = defineStore('book', () => {
     addRule,
     removeRule,
     generatePage,
+    editPage,
     updatePageContent,
     refreshSummary,
   }

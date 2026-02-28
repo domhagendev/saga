@@ -109,6 +109,12 @@ export interface GeneratePageRequest {
   mentionedEntities?: string[]
 }
 
+export interface EditPageRequest {
+  userNote: string // edit instructions from the user
+  targetMood: string
+  mentionedEntities?: string[]
+}
+
 export interface UpdatePageRequest {
   content?: string
   userNote?: string
